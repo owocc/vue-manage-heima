@@ -1,6 +1,6 @@
 module.exports = {
     productionSourceMap: false,
-    publicPath: '/VUE',
+    publicPath: './',
     outputDir: 'dist',
     assetsDir: 'static',
     devServer: {
