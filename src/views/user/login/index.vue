@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="login" :class="isOpen ? 'open-22' : 'close-22'">
-      <h2>- Login -</h2>
+      <h2>- Browser Login -</h2>
       <el-form
         class="form"
         :model="loginForm"
@@ -26,11 +26,14 @@
             show-password
             v-model="loginForm.password"
             prefix-icon="el-icon-lock"
-            minlength="8"
+            minlength="6"
             maxlength="20"
             @focus="foucsPasswd"
             @blur="blurPasswd"
           ></el-input>
+        </el-form-item>
+        <el-form-item class="login-options">
+          <el-checkbox v-model="loginForm.rememberme">Remember me</el-checkbox>
         </el-form-item>
         <el-form-item class="buttons">
           <el-button @click="resetForm">Reset Form</el-button>
@@ -42,11 +45,13 @@
 </template>
 <script>
 import request from "../../../utils/request";
+import tokenTools from "../../../utils/token";
 export default {
   data: () => ({
     loginForm: {
       username: "",
       password: "",
+      rememberme: true,
     },
     rules: {
       username: [
@@ -69,9 +74,9 @@ export default {
           trigger: "blur",
         },
         {
-          min: 8,
+          min: 6,
           max: 20,
-          message: "The length is 8 to 20 characters",
+          message: "The length is 6 to 20 characters",
           trigger: "blur",
         },
       ],
@@ -102,9 +107,24 @@ export default {
             password,
           },
         });
-
-        console.log(res)
+        if (res.meta.status !== 200) {
+          this.$message.warning(
+            "Login failed, please check your account or password"
+          );
+          return;
+        }
+        //save token
+        this.saveToken(res.data.token);
+        this.$router.push('/home')
       });
+    },
+    saveToken(token) {
+      const { rememberme } = this.loginForm;
+      if (rememberme) {
+        tokenTools.local.save(token);
+      } else {
+        tokenTools.session.save(token);
+      }
     },
   },
 };
@@ -145,7 +165,7 @@ export default {
 }
 
 .login {
-  height: 330px;
+  height: 380px;
   width: 550px;
   background: #fff;
   .rounded-sm();
@@ -192,18 +212,22 @@ export default {
   width: 90%;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 25px;
   .el-form-item {
     margin-bottom: 0;
   }
 }
 .buttons {
-  margin-top: 10px;
   ::v-deep .el-form-item__content {
     display: flex;
   }
   button {
     width: 100%;
+  }
+}
+.login-options {
+  ::v-deep .el-form-item__content {
+    display: flex;
   }
 }
 </style>
